@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface PendudukRepository extends JpaRepository<Penduduk, Long> {
     Penduduk findByNoKtp(String noKtp);
     Optional<Penduduk> findByKartuKeluargaNoKKAndNoKtp(String noKk, String noKtp);
+    boolean existsByNoKtp(String noKtp);
 }

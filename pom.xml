@@ -25,7 +25,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-web</artifactId>
 			</dependency>
-
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-devtools</artifactId>
@@ -38,20 +37,60 @@
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
-				<groupId>io.minio</groupId>
-				<artifactId>minio</artifactId>
-				<version>8.5.2</version>
-			</dependency>
-			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
 				<optional>true</optional>
 			</dependency>
+<!--			<dependency>-->
+<!--				<groupId>io.springfox</groupId>-->
+<!--				<artifactId>springfox-boot-starter</artifactId>-->
+<!--				<version>3.0.0</version>-->
+<!--			</dependency>-->
+<!--			<dependency>-->
+<!--				<groupId>io.springfox</groupId>-->
+<!--				<artifactId>springfox-swagger2</artifactId>-->
+<!--				<version>3.0.0</version>-->
+<!--			</dependency>-->
+<!--			<dependency>-->
+<!--				<groupId>io.springfox</groupId>-->
+<!--				<artifactId>springfox-swagger-ui</artifactId>-->
+<!--				<version>2.9.2</version>-->
+<!--			</dependency>-->
 			<dependency>
 				<groupId>io.springfox</groupId>
-				<artifactId>springfox-boot-starter</artifactId>
+				<artifactId>springfox-swagger2</artifactId>
 				<version>3.0.0</version>
 			</dependency>
+			<dependency>
+				<groupId>io.springfox</groupId>
+				<artifactId>springfox-swagger-ui</artifactId>
+				<version>2.9.2</version>
+			</dependency>
+			<dependency>
+				<groupId>io.minio</groupId>
+				<artifactId>minio</artifactId>
+				<version>8.5.6</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.4</version>
+			</dependency>
+<!--			<dependency>-->
+<!--				<groupId>org.flywaydb</groupId>-->
+<!--				<artifactId>flyway-core</artifactId>-->
+<!--				<version>8.5.13</version>-->
+<!--			</dependency>-->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-configuration-processor</artifactId>
+				<optional>true</optional>
+			</dependency>
+<!--			<dependency>-->
+<!--				<groupId>org.springframework.boot</groupId>-->
+<!--				<artifactId>spring-boot-starter-security</artifactId>-->
+<!--			</dependency>-->
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-test</artifactId>

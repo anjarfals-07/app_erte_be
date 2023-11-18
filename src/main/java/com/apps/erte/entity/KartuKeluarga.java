@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @AllArgsConstructor
 @Data
@@ -16,5 +17,6 @@ public class KartuKeluarga {
     private Long id;
     @Column(name = "no_kk",nullable = false, unique = true)
     private String noKK;
-    private String namaKepalaKeluarga;
+    @Column(nullable = true)
+    private String namaKepalaKeluarga;// In KartuKeluarga class
 }

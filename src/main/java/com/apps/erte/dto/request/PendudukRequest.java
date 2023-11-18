@@ -1,14 +1,17 @@
 package com.apps.erte.dto.request;
 
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
 @Data
 public class PendudukRequest {
     private String noKtp;
-    private KartuKeluargaRequest kartuKeluargaRequest;
+    private KartuKeluargaRequest kartuKeluarga;
     private String namaLengkap;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate tanggallahir;
     private String tempatLahir;
     private String jeniskelamin;
@@ -25,5 +28,5 @@ public class PendudukRequest {
     private String kecamatan;
     private String kota;
     private String kodePos;
-
+    private MultipartFile foto;
 }

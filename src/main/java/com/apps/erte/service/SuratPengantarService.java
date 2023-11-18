@@ -33,7 +33,7 @@ public class SuratPengantarService {
         suratPengantar.setTanggalSurat(request.getTanggalSurat());
         suratPengantar.setKeterangan(request.getKeterangan());
 
-        Optional<Penduduk> pendudukOptional = pendudukRepository.findByKartuKeluargaNoKKAndNoKtp(request.getPendudukRequest().getKartuKeluargaRequest().getNoKK(), request.getPendudukRequest().getNoKtp());
+        Optional<Penduduk> pendudukOptional = pendudukRepository.findByKartuKeluargaNoKKAndNoKtp(request.getPendudukRequest().getKartuKeluarga().getNoKK(), request.getPendudukRequest().getNoKtp());
         if (pendudukOptional.isPresent()) {
             suratPengantar.setPenduduk(pendudukOptional.get());
         }
@@ -42,7 +42,7 @@ public class SuratPengantarService {
         SuratPengantarResponse response = new SuratPengantarResponse();
         response.setId(savedSuratPengantar.getId());
         response.setNoSuratPengantar(savedSuratPengantar.getNoSuratPengantar());
-        response.setNoKk(request.getPendudukRequest().getKartuKeluargaRequest().getNoKK());
+        response.setNoKk(request.getPendudukRequest().getKartuKeluarga().getNoKK());
         response.setNoKtp(request.getPendudukRequest().getNoKtp());
         response.setTanggalSurat(savedSuratPengantar.getTanggalSurat());
         response.setKeterangan(savedSuratPengantar.getKeterangan());
