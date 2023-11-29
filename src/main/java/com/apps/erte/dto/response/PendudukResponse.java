@@ -3,7 +3,6 @@ package com.apps.erte.dto.response;
 import com.apps.erte.entity.KartuKeluarga;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -16,7 +15,7 @@ public class PendudukResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate tanggallahir;
     private String tempatLahir;
-    private String jeniskelamin;
+    private String jenisKelamin;
     private String statusKeluarga;
     private String statusPerkawinan;
     private String agama;

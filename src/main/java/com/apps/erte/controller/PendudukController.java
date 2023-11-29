@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @RestController
 @RequestMapping("/app/penduduk")
@@ -50,25 +49,51 @@ public class PendudukController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> createPenduduk( @ModelAttribute PendudukRequest request) {
+    public ResponseEntity<Object> createPenduduk(@ModelAttribute PendudukRequest request) {
         System.out.println("penduduk req {}" + request);
         try {
             PendudukResponse response = pendudukService.create(request);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (DataIntegrityViolationException e) {
-            ApiError error = new ApiError(HttpStatus.CONFLICT.value(), e.getMessage(), "Duplicate noKtp", new Date());
+            List<String> errors = List.of(Objects.requireNonNull(e.getMessage()));
+            ApiError error = new ApiError(HttpStatus.CONFLICT,  "Duplicate noKtp", errors);
             return new ResponseEntity<>(error, HttpStatus.CONFLICT);
         } catch (FileValidationException e) {
-            ApiError error = new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage(), "Invalid file uploaded", new Date());
+            List<String> errors = List.of(e.getMessage());
+            ApiError error = new ApiError(HttpStatus.BAD_REQUEST, "Invalid file uploaded",errors);
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", e.getMessage(), new Date());
+            List<String> errors = List.of(e.getMessage());
+            ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", errors);
             return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @PostMapping(value = "/{id}", consumes  = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> updatePenduduk( @PathVariable Long id,
+                                                  @ModelAttribute PendudukRequest request,
+                                                  @RequestHeader HttpHeaders headers) {
+        System.out.println("Request Headers: " + headers);
+        PendudukResponse updatedPenduduk = pendudukService.updatePenduduk(id, request);
 
-    @PutMapping("/update/{id}")
-    public PendudukResponse updatePenduduk(@PathVariable Long id, PendudukRequest request) {
-        return pendudukService.update(id, request);
+        if (updatedPenduduk != null) {
+            return ResponseEntity.ok(updatedPenduduk);
+        } else {
+            // Jika penduduk tidak ditemukan, bisa mengembalikan respons error sesuai kebutuhan
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Penduduk not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> deletePenduduk(@PathVariable Long id) {
+        try {
+            pendudukService.deletePenduduk(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            List<String> errors = List.of(e.getMessage());
+            ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", errors);
+            return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -22,14 +22,15 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         .allowedOrigins("http://localhost:4200")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*", "Content-Type");
             }
         };
-    }
+  }
     @Bean(name = "multipartResolver")
     public CommonsMultipartResolver commonsMultipartResolver() {
         CommonsMultipartResolver resolver = new CommonsMultipartResolver();
         resolver.setDefaultEncoding("utf-8");
+        resolver.setResolveLazily(true);
         resolver.setMaxUploadSizePerFile(5 * 1024 * 1024); // Set your maximum file size
         return resolver;
     }

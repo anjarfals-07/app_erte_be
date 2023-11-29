@@ -1,5 +1,6 @@
 package com.apps.erte.service;
 import com.apps.erte.config.MinioConfig;
+import com.apps.erte.dto.request.KartuKeluargaRequest;
 import com.apps.erte.dto.request.PendudukRequest;
 import com.apps.erte.dto.response.PendudukResponse;
 import com.apps.erte.entity.KartuKeluarga;
@@ -8,6 +9,7 @@ import com.apps.erte.repository.KartuKeluargaRepository;
 import com.apps.erte.repository.PendudukRepository;
 import com.apps.erte.util.FileValidationException;
 import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
 import io.minio.UploadObjectArgs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,13 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 @Service
 public class PendudukService {
     private final PendudukRepository pendudukRepository;
     private final KartuKeluargaRepository kartuKeluargaRepository;
-    @Autowired
-    private MinioClient minioClient;
+    private final MinioClient minioClient;
     @Autowired
     private  MinioConfig minioConfig;
 
@@ -35,6 +37,7 @@ public class PendudukService {
     public PendudukService(PendudukRepository pendudukRepository, KartuKeluargaRepository kartuKeluargaRepository, MinioClient minioClient) {
         this.pendudukRepository = pendudukRepository;
         this.kartuKeluargaRepository = kartuKeluargaRepository;
+        this.minioClient = minioClient;
     }
     public Page<PendudukResponse> findAll(Pageable pageable, Sort sort) {
         Pageable pageableWithSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
@@ -64,9 +67,12 @@ public class PendudukService {
                 kartuKeluarga = new KartuKeluarga();
                 kartuKeluarga.setNoKK(request.getKartuKeluarga().getNoKK());
                 kartuKeluarga.setNamaKepalaKeluarga(request.getKartuKeluarga().getNamaKepalaKeluarga());
-                kartuKeluarga = kartuKeluargaRepository.save(kartuKeluarga); // Save the KartuKeluarga before using it in Penduduk
+                kartuKeluarga = kartuKeluargaRepository.save(kartuKeluarga);
+
             }
+
         }
+
 
         Penduduk penduduk = new Penduduk();
         // Set KartuKeluarga in Penduduk
@@ -94,28 +100,98 @@ public class PendudukService {
 
         return mapResidentToResponse(savedResident);
     }
-    public PendudukResponse update(Long id, PendudukRequest request) {
-        Optional<Penduduk> residentOptional = pendudukRepository.findById(id);
-        if (residentOptional.isPresent()) {
-            Penduduk penduduk = residentOptional.get();
-            mapRequestToResident(request, penduduk);
-            Penduduk updatedResident = pendudukRepository.save(penduduk);
-            return mapResidentToResponse(updatedResident);
+
+    public PendudukResponse updatePenduduk(Long id, PendudukRequest request) {
+        Optional<Penduduk> pendudukOptional = pendudukRepository.findById(id);
+
+        if (pendudukOptional.isPresent()) {
+            Penduduk existingPenduduk = pendudukOptional.get();
+            String oldFotoUrl = existingPenduduk.getFotoUrl();
+            System.out.println("old photo : " + oldFotoUrl);
+
+
+            // Update data penduduk tanpa foto
+            mapRequestToResident(request, existingPenduduk);
+
+            // Update data kartu keluarga jika ada
+            if (request.getKartuKeluarga() != null) {
+                KartuKeluargaRequest kkRequest = request.getKartuKeluarga();
+
+                // Inisialisasi atau perbarui objek KartuKeluarga
+                KartuKeluarga kartuKeluarga = existingPenduduk.getKartuKeluarga();
+                if (kartuKeluarga == null) {
+                    kartuKeluarga = new KartuKeluarga();
+                    existingPenduduk.setKartuKeluarga(kartuKeluarga);
+                }
+
+                kartuKeluarga.setNoKK(kkRequest.getNoKK());
+                kartuKeluarga.setNamaKepalaKeluarga(kkRequest.getNamaKepalaKeluarga());
+
+                // Simpan objek KartuKeluarga yang telah diperbarui
+                existingPenduduk.setKartuKeluarga(kartuKeluargaRepository.save(kartuKeluarga));
+            }
+
+            // Update foto jika ada perubahan
+            if (request.getFoto() != null && !request.getFoto().isEmpty()) {
+                if (request.getFoto().getOriginalFilename() != null && request.getFoto().getContentType() != null) {
+                    // Hapus foto lama di Minio
+                    if (oldFotoUrl != null) {
+                        deleteFotoFromMinio(oldFotoUrl);
+                    }
+                    // Simpan foto baru di Minio
+                    String newFotoUrl = saveFotoToMinio(request.getFoto(), request.getNoKtp());
+                    existingPenduduk.setFotoUrl(newFotoUrl);  // Set FotoUrl dengan URL baru
+                }
+            } else {
+                // Jika foto tidak berubah, tetap gunakan foto yang lama
+                existingPenduduk.setFotoUrl(oldFotoUrl);
+            }
+            // Simpan perubahan
+            Penduduk savedPenduduk = pendudukRepository.save(existingPenduduk);
+
+            // Mengembalikan respons dengan data yang sudah diupdate
+            return mapResidentToResponse(savedPenduduk);
         }
-        return null; // atau throw exception jika tidak ditemukan
+
+        // Jika penduduk tidak ditemukan, bisa dikembalikan null atau respons error sesuai kebutuhan
+        return null;
     }
+
     public void deletePenduduk(Long id) {
-        pendudukRepository.deleteById(id);
+        Optional<Penduduk> pendudukOptional = pendudukRepository.findById(id);
+
+        if (pendudukOptional.isPresent()) {
+            Penduduk penduduk = pendudukOptional.get();
+
+            // Hapus foto dari Minio
+            if (penduduk.getFotoUrl() != null) {
+                deleteFotoFromMinio(penduduk.getFotoUrl());
+            }
+
+            // Hapus penduduk
+            pendudukRepository.delete(penduduk);
+
+            // Cek apakah kartu_keluarga masih memiliki referensi di penduduk
+            List<Penduduk> otherResidentsWithSameKK = pendudukRepository
+                    .findByKartuKeluargaNoKK(penduduk.getKartuKeluarga().getNoKK());
+
+            if (otherResidentsWithSameKK.isEmpty()) {
+                // Hapus kartu_keluarga jika tidak ada penduduk lain dengan kartu_keluarga yang sama
+                kartuKeluargaRepository.delete(penduduk.getKartuKeluarga());
+            }
+        }
     }
+
+
     private PendudukResponse mapResidentToResponse(Penduduk resident) {
         PendudukResponse response = new PendudukResponse();
         response.setId(resident.getId());
         response.setNoKtp(resident.getNoKtp());
-        response.setKartuKeluarga(resident.getKartuKeluarga()); // Mengganti idKartuKeluarga dengan objek KartuKeluarga
+        response.setKartuKeluarga(resident.getKartuKeluarga());
         response.setNamaLengkap(resident.getNamaLengkap());
         response.setTanggallahir(resident.getTanggalLahir());
         response.setTempatLahir(resident.getTempatLahir());
-        response.setJeniskelamin(resident.getJenisKelamin());
+        response.setJenisKelamin(resident.getJenisKelamin());
         response.setStatusKeluarga(resident.getStatuskeluarga());
         response.setStatusPerkawinan(resident.getStatusPerkawinan());
         response.setAgama(resident.getAgama());
@@ -135,33 +211,29 @@ public class PendudukService {
 
     private void mapRequestToResident(PendudukRequest request, Penduduk resident) {
         resident.setNoKtp(request.getNoKtp());
-        // Set KartuKeluarga from request to Penduduk
-        if (request.getKartuKeluarga() != null) {
-            KartuKeluarga familyCard = kartuKeluargaRepository.findByNoKK(request.getKartuKeluarga().getNoKK());
 
-            if (familyCard == null) {
-                throw new RuntimeException("Kartu Keluarga tidak ditemukan");
+        if (request.getKartuKeluarga() != null) {
+            KartuKeluargaRequest kartuKeluargaRequest = request.getKartuKeluarga();
+
+            // Inisialisasi atau perbarui objek KartuKeluarga
+            KartuKeluarga kartuKeluarga = resident.getKartuKeluarga();
+            if (kartuKeluarga == null) {
+                kartuKeluarga = new KartuKeluarga();
+                resident.setKartuKeluarga(kartuKeluarga);
             }
 
-            resident.setKartuKeluarga(familyCard);
+            kartuKeluarga.setNoKK(kartuKeluargaRequest.getNoKK());
+            kartuKeluarga.setNamaKepalaKeluarga(kartuKeluargaRequest.getNamaKepalaKeluarga());
         }
 
         if (request.getFoto() != null) {
             String fotoUrl = saveFotoToMinio(request.getFoto(), request.getNoKtp());
             resident.setFotoUrl(fotoUrl);
         }
-//        resident.setNoKtp(request.getNoKtp());
-//        if (request.getKartuKeluargaRequest() != null) {
-//            KartuKeluarga familyCard = resident.getKartuKeluarga();
-//            if (familyCard == null) {
-//                throw new RuntimeException("Kartu Keluarga tidak ditemukan");
-//            }
-//        }
-//        resident.setKartuKeluarga(familyCard);
         resident.setNamaLengkap(request.getNamaLengkap());
         resident.setTanggalLahir(request.getTanggallahir());
         resident.setTempatLahir(request.getTempatLahir());
-        resident.setJenisKelamin(request.getJeniskelamin());
+        resident.setJenisKelamin(request.getJenisKelamin());
         resident.setStatuskeluarga(request.getStatusKeluarga());
         resident.setStatusPerkawinan(request.getStatusPerkawinan());
         resident.setAgama(request.getAgama());
@@ -175,6 +247,7 @@ public class PendudukService {
         resident.setKecamatan(request.getKecamatan());
         resident.setKota(request.getKota());
         resident.setKodePos(request.getKodePos());
+
     }
 
     private String saveFotoToMinio(MultipartFile foto,  String noKtp) {
@@ -189,15 +262,32 @@ public class PendudukService {
                             .contentType(foto.getContentType())
                             .build()
             );
-            // URL Manual
-//            String minioEndpoint = minioConfig.getEndpoint();
+
             String minioEndpoint = "http://127.0.0.1:9000";
             String bucketName = minioConfig.getBucketName();
+            System.out.println("Saved photo URL: " + minioEndpoint + "/" + bucketName + "/" + fotoObjectName);
             return minioEndpoint + "/" + bucketName + "/" + fotoObjectName;
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload a photo to Minio: " + e.getMessage());
         }
     }
+
+    private void deleteFotoFromMinio(String fotoUrl) {
+        try {
+            // Mendapatkan nama objek dari URL
+            String objectName = fotoUrl.substring(fotoUrl.indexOf(minioConfig.getBucketName()) + minioConfig.getBucketName().length() + 1);
+            System.out.println("object name: " + objectName);
+
+            // Menghapus objek dari Minio
+            minioClient.removeObject(RemoveObjectArgs.builder()
+                    .bucket(minioConfig.getBucketName())
+                    .object(objectName)
+                    .build());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete photo from Minio: " + e.getMessage());
+        }
+    }
+
     private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
         File file = new File(multipartFile.getOriginalFilename());
         try (FileOutputStream fos = new FileOutputStream(file)) {

@@ -17,6 +17,5 @@ public class KartuKeluarga {
     private Long id;
     @Column(name = "no_kk",nullable = false, unique = true)
     private String noKK;
-    @Column(nullable = true)
-    private String namaKepalaKeluarga;// In KartuKeluarga class
+    private String namaKepalaKeluarga;
 }

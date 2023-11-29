@@ -14,7 +14,7 @@ public class PendudukRequest {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate tanggallahir;
     private String tempatLahir;
-    private String jeniskelamin;
+    private String jenisKelamin;
     private String statusKeluarga;
     private String statusPerkawinan;
     private String agama;
