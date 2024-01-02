@@ -1,8 +1,15 @@
 package com.apps.erte.service;
 
 import com.apps.erte.dto.request.SuratPengantarRequest;
+import com.apps.erte.dto.request.meninggal.PendudukMeninggalRequest;
+import com.apps.erte.dto.request.meninggal.SuratKeteranganMeninggalRequest;
+import com.apps.erte.dto.response.PendudukResponse;
 import com.apps.erte.dto.response.SuratPengantarResponse;
+import com.apps.erte.dto.response.meninggal.PendudukMeninggalResponse;
+import com.apps.erte.dto.response.meninggal.SuratKeteranganMeninggalResponse;
 import com.apps.erte.entity.Penduduk;
+import com.apps.erte.entity.kematian.PendudukMeninggal;
+import com.apps.erte.entity.kematian.SuratKeteranganMeninggal;
 import com.apps.erte.entity.suratpengantar.SuratPengantar;
 import com.apps.erte.repository.PendudukRepository;
 import com.apps.erte.repository.suratpengantar.SuratPengantarRepository;
@@ -11,7 +18,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
@@ -28,119 +37,107 @@ public class SuratPengantarService {
     private PendudukRepository pendudukRepository;
 
     public SuratPengantarResponse createSuratPengantar(SuratPengantarRequest request) {
+        // Membuat objek surat pengantar dari request
         SuratPengantar suratPengantar = new SuratPengantar();
         suratPengantar.setNoSuratPengantar(request.getNoSuratPengantar());
         suratPengantar.setTanggalSurat(request.getTanggalSurat());
+        suratPengantar.setKeperluan(request.getKeperluan());
         suratPengantar.setKeterangan(request.getKeterangan());
+        Penduduk penduduk = pendudukRepository.findById(request.getPendudukId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Penduduk not found"));
 
-        Optional<Penduduk> pendudukOptional = pendudukRepository.findByKartuKeluargaNoKKAndNoKtp(request.getPendudukRequest().getKartuKeluarga().getNoKK(), request.getPendudukRequest().getNoKtp());
-        if (pendudukOptional.isPresent()) {
-            suratPengantar.setPenduduk(pendudukOptional.get());
-        }
-
-        SuratPengantar savedSuratPengantar = suratPengantarRepository.save(suratPengantar);
-        SuratPengantarResponse response = new SuratPengantarResponse();
-        response.setId(savedSuratPengantar.getId());
-        response.setNoSuratPengantar(savedSuratPengantar.getNoSuratPengantar());
-        response.setNoKk(request.getPendudukRequest().getKartuKeluarga().getNoKK());
-        response.setNoKtp(request.getPendudukRequest().getNoKtp());
-        response.setTanggalSurat(savedSuratPengantar.getTanggalSurat());
-        response.setKeterangan(savedSuratPengantar.getKeterangan());
-
-        if (suratPengantar.getPenduduk() != null) {
-            Penduduk penduduk = suratPengantar.getPenduduk();
-            response.setNamaLengkap(penduduk.getNamaLengkap());
-            response.setTanggallahir(penduduk.getTanggalLahir());
-            response.setJeniskelamin(penduduk.getJenisKelamin());
-            // tambahkan atribut lain dari entity Penduduk yang perlu ditampilkan
-        }
-
-        return response;
+        // Menghubungkan penduduk dengan surat pengantar
+        suratPengantar.setPenduduk(penduduk);
+        // Menyimpan data ke database
+        suratPengantar = suratPengantarRepository.save(suratPengantar);
+        // Membuat response
+        return buildSuratPengantarResponse(suratPengantar);
     }
 
 
     public SuratPengantarResponse updateSuratPengantar(Long id, SuratPengantarRequest request) {
-        Optional<SuratPengantar> existingSuratPengantar = suratPengantarRepository.findById(id);
-        if (existingSuratPengantar.isPresent()) {
-            SuratPengantar suratPengantar = existingSuratPengantar.get();
-            suratPengantar.setNoSuratPengantar(request.getNoSuratPengantar());
-            suratPengantar.setTanggalSurat(request.getTanggalSurat());
-            suratPengantar.setKeterangan(request.getKeterangan());
+        // Mencari data surat pengantar yang akan diupdate
+        SuratPengantar suratPengantar = suratPengantarRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Surat Pengantar not found"));
 
-            // Update other fields as needed
+        // Mengupdate data pada objek surat pengantar dari request
+        suratPengantar.setNoSuratPengantar(request.getNoSuratPengantar());
+        suratPengantar.setTanggalSurat(request.getTanggalSurat());
+        suratPengantar.setKeperluan(request.getKeperluan());
+        suratPengantar.setKeterangan(request.getKeterangan());
 
-            SuratPengantar updatedSuratPengantar = suratPengantarRepository.save(suratPengantar);
+        // Mencari data penduduk yang akan diupdate
+        Penduduk penduduk = pendudukRepository.findById(request.getPendudukId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Penduduk not found"));
 
-            // Create and return the response
-            SuratPengantarResponse response = new SuratPengantarResponse();
-            response.setId(updatedSuratPengantar.getId());
-            response.setNoSuratPengantar(updatedSuratPengantar.getNoSuratPengantar());
-            response.setTanggalSurat(updatedSuratPengantar.getTanggalSurat());
-            response.setKeterangan(updatedSuratPengantar.getKeterangan());
+        // Menghubungkan penduduk dengan surat pengantar
+        suratPengantar.setPenduduk(penduduk);
 
-            // Set other fields in the response
+        // Menyimpan data ke database
+        suratPengantar = suratPengantarRepository.save(suratPengantar);
 
-            return response;
-        } else {
-            throw new EntityNotFoundException("SuratPengantar not found with id: " + id);
-        }
+        // Membuat response
+        return buildSuratPengantarResponse(suratPengantar);
     }
 
     public void deleteSuratPengantar(Long id) {
-        suratPengantarRepository.deleteById(id);
+        // Temukan surat pengantar yang akan dihapus
+        SuratPengantar suratPengantar = suratPengantarRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Surat Pengantar not found"));
+        // Hapus penduduk meninggal dari database
+        suratPengantarRepository.delete(suratPengantar);
+    }
+    public Page<SuratPengantarResponse> getAllSuratPengantar(Pageable pageable, Sort sort) {
+        Pageable pageableWithSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<SuratPengantar> suratPengantars = suratPengantarRepository.findAll(pageableWithSort);
+        return suratPengantars.map(this::buildSuratPengantarResponse);
+    }
+    public Page<SuratPengantar> getSuratPengantarByNoSurat(String noSurat, Pageable pageable) {
+        return suratPengantarRepository.findByNoSuratPengantar(noSurat, pageable);
     }
 
-    public List<SuratPengantarResponse> searchSuratPengantar(String noSuratPengantar, String noKtp, String noKk, String namaLengkap) {
-        List<SuratPengantar> suratPengantars = suratPengantarRepository.findByNoSuratPengantarOrPendudukNoKtpOrPendudukKartuKeluargaNoKKOrPendudukNamaLengkap(noSuratPengantar, noKtp, noKk, namaLengkap);
-        List<SuratPengantarResponse> responses = new ArrayList<>();
-        for (SuratPengantar suratPengantar : suratPengantars) {
-            SuratPengantarResponse response = mapSuratPengantarToResponse(suratPengantar);
-            responses.add(response);
-        }
-        return responses;
-    }
-
-    public Page<SuratPengantarResponse> getAllSuratPengantars(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        Page<SuratPengantar> suratPengantarPage = suratPengantarRepository.findAll(pageable);
-        return suratPengantarPage.map(this::mapSuratPengantarToResponse);
-    }
-
-//    private SuratPengantarResponse mapSuratPengantarToResponse(SuratPengantar suratPengantar) {
-//        SuratPengantarResponse response = new SuratPengantarResponse();
-//        response.setId(suratPengantar.getId());
-//        response.setNoSuratPengantar(suratPengantar.getNoSuratPengantar());
-//        response.setTanggalSurat(suratPengantar.getTanggalSurat());
-//        response.setKeterangan(suratPengantar.getKeterangan());
-//
-//        // Now, if SuratPengantar has a reference to Penduduk, you can include Penduduk-related fields in the response
-//        if (suratPengantar.getPenduduk() != null) {
-//            Penduduk penduduk = suratPengantar.getPenduduk();
-//            response.setNoKk(penduduk.getKartuKeluarga().getNoKK());
-//            response.setNoKtp(penduduk.getNoKtp());
-//            response.setNamaLengkap(penduduk.getNamaLengkap());
-//            response.setTanggallahir(penduduk.getTanggalLahir());
-//            response.setJeniskelamin(penduduk.getJenisKelamin());
-//            // Map other Penduduk-related fields as needed
-//        }
-//
-//        return response;
-//    }
-
-    private SuratPengantarResponse mapSuratPengantarToResponse(SuratPengantar suratPengantar) {
+    private SuratPengantarResponse buildSuratPengantarResponse(SuratPengantar suratPengantar) {
+        // Membuat response
         SuratPengantarResponse response = new SuratPengantarResponse();
         response.setId(suratPengantar.getId());
         response.setNoSuratPengantar(suratPengantar.getNoSuratPengantar());
-        response.setNoKk(suratPengantar.getPenduduk().getKartuKeluarga().getNoKK());
-        response.setNoKtp(suratPengantar.getPenduduk().getNoKtp());
-        response.setNamaLengkap(suratPengantar.getPenduduk().getNamaLengkap());
-        response.setTanggallahir(suratPengantar.getPenduduk().getTanggalLahir());
-        response.setJeniskelamin(suratPengantar.getPenduduk().getJenisKelamin());
         response.setTanggalSurat(suratPengantar.getTanggalSurat());
+        response.setKeperluan(suratPengantar.getKeperluan());
         response.setKeterangan(suratPengantar.getKeterangan());
+        // Mengisi data PendudukResponse
+        PendudukResponse pendudukResponse = new PendudukResponse();
+        Penduduk penduduk = suratPengantar.getPenduduk();
+        // Menambahkan data lainnya sesuai kebutuhan
+        response.setPenduduk(buildPendudukResponse(penduduk));
+        return response;
+    }
 
-        // Map other fields as needed
-
+    private PendudukResponse buildPendudukResponse(Penduduk penduduk) {
+        PendudukResponse response = new PendudukResponse();
+        response.setId(penduduk.getId());
+        response.setNoKtp(penduduk.getNoKtp());
+        response.setKartuKeluarga(penduduk.getKartuKeluarga());
+        response.setNamaLengkap(penduduk.getNamaLengkap());
+        response.setTanggallahir(penduduk.getTanggalLahir());
+        response.setTempatLahir(penduduk.getTempatLahir());
+        response.setJenisKelamin(penduduk.getJenisKelamin());
+        response.setStatusKeluarga(penduduk.getStatuskeluarga());
+        response.setStatusPerkawinan(penduduk.getStatusPerkawinan());
+        response.setAgama(penduduk.getAgama());
+        response.setPendidikan(penduduk.getPendidikan());
+        response.setPekerjaan(penduduk.getPekerjaan());
+        response.setTelepon(penduduk.getTelepon());
+        response.setAlamat(penduduk.getAlamat());
+        response.setRt(penduduk.getRt());
+        response.setRw(penduduk.getRw());
+        response.setKelurahan(penduduk.getKelurahan());
+        response.setKecamatan(penduduk.getKecamatan());
+        response.setKota(penduduk.getKota());
+        response.setKodePos(penduduk.getKodePos());
+        response.setFotoUrl(penduduk.getFotoUrl());
+        response.setStatusPenduduk(penduduk.getStatusPenduduk());
+        response.setNewStatusPenduduk(penduduk.getNewStatusPenduduk());
+        // Tambahan data lainnya sesuai kebutuhan
         return response;
     }
 

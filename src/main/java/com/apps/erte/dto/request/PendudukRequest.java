@@ -29,4 +29,6 @@ public class PendudukRequest {
     private String kota;
     private String kodePos;
     private MultipartFile foto;
+    private String statusPenduduk;
+    private String newStatusPenduduk;
 }

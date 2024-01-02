@@ -1,82 +1,3 @@
-#  version: '3'
-#  services:
-#    springboot-app:
-#      build:
-#        context: .
-#        dockerfile: Dockerfile
-#      ports:
-#        - "8089:8089"
-#      environment:
-#        SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/siap_app
-#        SPRING_DATASOURCE_USERNAME: postgres
-#        SPRING_DATASOURCE_PASSWORD: anjar94
-#      depends_on:
-#        - postgresql
-#    postgresql:
-#      image: postgres:15.3
-#      container_name: postgres-container
-#      environment:
-#        POSTGRES_DB: siap_app
-#        POSTGRES_USER: postgres
-#        POSTGRES_PASSWORD: anjar94
-#      ports:
-#        - "5432:5432"
-#    minio:
-#      image: minio/minio:latest
-#      volumes:
-#        - ./minio:/data
-#      ports:
-#        - 9000:9000
-#        - 9001:9001
-#      command: server /data --console-address :9001
-#
-#  version: '3'
-#  services:
-#    springboot-app:
-#      build:
-#        context: .
-#        dockerfile: Dockerfile
-#      ports:
-#        - "8089:8089"
-#      environment:
-#        SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/siap_app
-#        SPRING_DATASOURCE_USERNAME: postgres
-#        SPRING_DATASOURCE_PASSWORD: anjar94
-#      depends_on:
-#        - postgresql
-#
-#    postgresql:
-#      image: postgres:15.3
-#      container_name: postgres-container
-#      environment:
-#        POSTGRES_DB: siap_app
-#        POSTGRES_USER: postgres
-#        POSTGRES_PASSWORD: anjar94
-#      ports:
-#        - "5432:5432"
-#
-#    minio:
-#      image: minio/minio:latest
-#      volumes:
-#        - ./minio:/data
-#      ports:
-#        - 9000:9000
-#        - 9001:9001
-#      command: server /data --console-address :9001
-#
-#    pgadmin:
-#      image: dpage/pgadmin4
-#      container_name: pgadmin-container
-#      environment:
-#        PGADMIN_DEFAULT_EMAIL: admin@example.com
-#        PGADMIN_DEFAULT_PASSWORD: admin
-#        PGADMIN_LISTEN_PORT: 5050
-#      ports:
-#        - "5050:5050"
-#      depends_on:
-#        - postgresql
-
-
 version: '3'
 services:
   springboot-app:
@@ -88,7 +9,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/siap_app
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: anjar94
+      SPRING_DATASOURCE_PASSWORD: nop4ssword
     depends_on:
       - postgresql
       - minio  # Added dependency on the MinIO service
@@ -99,9 +20,11 @@ services:
     environment:
       POSTGRES_DB: siap_app
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: anjar94
+      POSTGRES_PASSWORD: nop4ssword
     ports:
       - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
 
   minio:
     image: minio/minio
@@ -116,3 +39,17 @@ services:
       MINIO_ACCESS_KEY: developer
       MINIO_SECRET_KEY: nop4ssword
     command: server /data --console-address :9001
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 5050
+    ports:
+      - "5050:5050"
+    depends_on:
+      - postgresql
+
+volumes:
+  postgres-data:

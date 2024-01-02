@@ -35,4 +35,6 @@ public class Penduduk {
     private String kota;
     private String kodePos;
     private String fotoUrl;
+    private String statusPenduduk;
+    private String newStatusPenduduk;
 }

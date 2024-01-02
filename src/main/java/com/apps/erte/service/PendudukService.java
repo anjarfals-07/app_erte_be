@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 public class PendudukService {
     private final PendudukRepository pendudukRepository;
@@ -72,7 +74,6 @@ public class PendudukService {
             }
 
         }
-
 
         Penduduk penduduk = new Penduduk();
         // Set KartuKeluarga in Penduduk
@@ -162,15 +163,12 @@ public class PendudukService {
 
         if (pendudukOptional.isPresent()) {
             Penduduk penduduk = pendudukOptional.get();
-
             // Hapus foto dari Minio
             if (penduduk.getFotoUrl() != null) {
                 deleteFotoFromMinio(penduduk.getFotoUrl());
             }
-
             // Hapus penduduk
             pendudukRepository.delete(penduduk);
-
             // Cek apakah kartu_keluarga masih memiliki referensi di penduduk
             List<Penduduk> otherResidentsWithSameKK = pendudukRepository
                     .findByKartuKeluargaNoKK(penduduk.getKartuKeluarga().getNoKK());
@@ -182,6 +180,14 @@ public class PendudukService {
         }
     }
 
+    public List<PendudukResponse> getAllPenduduk() {
+        List<Penduduk> pendudukList = pendudukRepository.findAll();
+        return pendudukList.stream().map(this::mapResidentToResponse).collect(Collectors.toList());
+    }
+    public List<PendudukResponse> getPendudukByNoKK(String noKK) {
+        List<Penduduk> pendudukList = pendudukRepository.findByKartuKeluargaNoKK(noKK);
+        return pendudukList.stream().map(this::mapResidentToResponse).collect(Collectors.toList());
+    }
 
     private PendudukResponse mapResidentToResponse(Penduduk resident) {
         PendudukResponse response = new PendudukResponse();
@@ -206,6 +212,8 @@ public class PendudukService {
         response.setKota(resident.getKota());
         response.setKodePos(resident.getKodePos());
         response.setFotoUrl(resident.getFotoUrl());
+        response.setStatusPenduduk(resident.getStatusPenduduk());
+        response.setNewStatusPenduduk(resident.getNewStatusPenduduk());
         return response;
     }
 
@@ -247,6 +255,8 @@ public class PendudukService {
         resident.setKecamatan(request.getKecamatan());
         resident.setKota(request.getKota());
         resident.setKodePos(request.getKodePos());
+        resident.setStatusPenduduk(request.getStatusPenduduk());
+        resident.setNewStatusPenduduk(request.getNewStatusPenduduk());
 
     }
 

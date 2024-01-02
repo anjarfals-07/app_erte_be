@@ -1,5 +1,6 @@
 package com.apps.erte.entity.pindah;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -11,11 +12,8 @@ public class SuratKeteranganPindah {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String noSuratPindah;
-    private LocalDate tanggalSuratpindah;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate tanggalSuratPindah;
     private String keteranganPindah;
-    @OneToOne
-    @JoinColumn(name = "penduduk_pindah_id")
-    private PendudukPindah pendudukPindah;
 }

@@ -30,4 +30,6 @@ public class PendudukResponse {
     private String kota;
     private String kodePos;
     private String fotoUrl;
+    private String statusPenduduk;
+    private String newStatusPenduduk;
 }

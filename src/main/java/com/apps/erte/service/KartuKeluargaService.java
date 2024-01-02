@@ -5,11 +5,14 @@ import com.apps.erte.dto.response.PendudukResponse;
 import com.apps.erte.entity.KartuKeluarga;
 import com.apps.erte.entity.Penduduk;
 import com.apps.erte.repository.KartuKeluargaRepository;
+import com.apps.erte.repository.PendudukRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class KartuKeluargaService {

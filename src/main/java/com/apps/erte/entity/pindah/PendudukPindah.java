@@ -1,5 +1,6 @@
 package com.apps.erte.entity.pindah;
 
+import com.apps.erte.entity.KartuKeluarga;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,4 +19,6 @@ public class PendudukPindah {
     private String kodePindah;
     private LocalDate tanggalPindah;
     private String alamatPindah;
+    @OneToOne
+    private SuratKeteranganPindah suratKeteranganPindah;
 }

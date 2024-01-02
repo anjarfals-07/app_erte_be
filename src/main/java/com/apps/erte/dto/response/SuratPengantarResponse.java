@@ -1,5 +1,6 @@
 package com.apps.erte.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -8,11 +9,9 @@ import java.time.LocalDate;
 public class SuratPengantarResponse {
     private Long id;
     private String noSuratPengantar;
-    private String noKk;
-    private String noKtp;
-    private String namaLengkap;
-    private LocalDate tanggallahir;
-    private String jeniskelamin;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate tanggalSurat;
     private String keterangan;
+    private String keperluan;
+    private PendudukResponse penduduk;
 }

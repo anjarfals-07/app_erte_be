@@ -3,6 +3,7 @@ package com.apps.erte.controller;
 import com.apps.erte.dto.request.KartuKeluargaRequest;
 import com.apps.erte.dto.request.PendudukRequest;
 import com.apps.erte.dto.response.PendudukResponse;
+import com.apps.erte.entity.Penduduk;
 import com.apps.erte.service.PendudukService;
 import com.apps.erte.util.ApiError;
 import com.apps.erte.util.FileValidationException;
@@ -32,15 +33,12 @@ public class PendudukController {
     }
 
     @GetMapping()
-    public Map<String, List<PendudukResponse>> getAllPenduduk(
+    public List<PendudukResponse> getAllPenduduk(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "sort", defaultValue = "asc") String sort) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-        List<PendudukResponse> pendudukList = pendudukService.findAll(pageable, Sort.unsorted()).getContent();
-        Map<String, List<PendudukResponse>> response = new HashMap<>();
-        response.put("penduduk", pendudukList);
-        return response;
+        return pendudukService.findAll(pageable, Sort.unsorted()).getContent();
     }
 
     @GetMapping("/{id}")
@@ -95,5 +93,15 @@ public class PendudukController {
             ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", errors);
             return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/get-all-penduduk")
+    public List<PendudukResponse> getDataPenduduk() {
+        return pendudukService.getAllPenduduk();
+    }
+
+    @GetMapping("/get-penduduk-by-no-kk")
+    public List<PendudukResponse> getPendudukByNoKK(@RequestParam String noKK) {
+        return pendudukService.getPendudukByNoKK(noKK);
     }
 }

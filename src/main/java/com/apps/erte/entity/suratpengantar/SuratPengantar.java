@@ -18,6 +18,7 @@ public class SuratPengantar {
     private Long id;
     private String noSuratPengantar;
     private LocalDate tanggalSurat;
+    private String keperluan;
     private String keterangan;
 
     @ManyToOne

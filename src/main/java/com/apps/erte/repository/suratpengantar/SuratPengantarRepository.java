@@ -1,6 +1,8 @@
 package com.apps.erte.repository.suratpengantar;
 
 import com.apps.erte.entity.suratpengantar.SuratPengantar;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +17,5 @@ List<SuratPengantar> findByNoSuratPengantarOrPendudukNoKtpOrPendudukKartuKeluarg
         String noSuratPengantar, String noKtp, String noKK, String namaLengkap);
 
 
-
+    Page<SuratPengantar> findByNoSuratPengantar(String noSurat, Pageable pageable);
 }
