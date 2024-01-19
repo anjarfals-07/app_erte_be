@@ -9,7 +9,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/siap_app
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: anjar94
+      SPRING_DATASOURCE_PASSWORD: nop4ssword
       JWT_SECRET: developer
       JWT_EXPIRATION: 3600  # Set the desired expiration time
     depends_on:
@@ -22,7 +22,7 @@ services:
     environment:
       POSTGRES_DB: siap_app
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: anjar94
+      POSTGRES_PASSWORD: nop4ssword
     ports:
       - "5432:5432"
 

@@ -3,7 +3,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/siap_app
     username: postgres
-    password: anjar94
+    password: nop4ssword
   jpa:
     hibernate:
       ddl-auto: update
