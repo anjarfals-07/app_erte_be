@@ -2,6 +2,7 @@ package com.apps.erte.controller;
 
 import com.apps.erte.dto.request.meninggal.PendudukMeninggalRequest;
 import com.apps.erte.dto.response.PendudukResponse;
+import com.apps.erte.dto.response.SuratPengantarResponse;
 import com.apps.erte.dto.response.meninggal.PendudukMeninggalResponse;
 import com.apps.erte.dto.response.pindah.PendudukPindahResponse;
 import com.apps.erte.entity.Penduduk;
@@ -66,5 +67,22 @@ public class PendudukMeninggalController {
         // Hapus penduduk meninggal dan reset newStatusPenduduk menjadi NULL
         pendudukMeninggalService.deletePendudukMeninggal(id);
         return new ResponseEntity<>("Penduduk Meninggal deleted successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public List<PendudukMeninggalResponse> searchPendudukMeninggal(
+            @RequestParam(name = "keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sort", defaultValue = "id,asc") String sort) {
+
+        String[] sortProperties = sort.split(",");
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if (sortProperties.length > 1 && sortProperties[1].equalsIgnoreCase("desc")) {
+            direction = Sort.Direction.DESC;
+        }
+        Pageable pageable = PageRequest.of(page, size, direction, sortProperties[0]);
+        return pendudukMeninggalService.search(keyword, pageable).getContent();
     }
 }

@@ -1,5 +1,4 @@
 spring:
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/siap_app
@@ -32,3 +31,8 @@ minio:
   bucket-name: erte14
   image-size: 10485760
   file-size: 1073741824
+
+jwt:
+  jwtSecret: developer
+  jwtExpirationMs: 86400000
+

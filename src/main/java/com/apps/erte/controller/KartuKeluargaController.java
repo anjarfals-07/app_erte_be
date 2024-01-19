@@ -23,17 +23,14 @@ public class KartuKeluargaController {
     public KartuKeluargaController(KartuKeluargaService kartuKeluargaService) {
         this.kartuKeluargaService = kartuKeluargaService;
     }
-    @GetMapping()
-    public Map<String, List<KartuKeluargaResponse>> getAllKartuKeluarga(
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size,
-            @RequestParam(name = "sort", defaultValue = "asc") String sort) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-        List<KartuKeluargaResponse> kartuKeluargaResponseList = kartuKeluargaService.findAll(pageable, Sort.unsorted()).getContent();
-        Map<String, List<KartuKeluargaResponse>> response = new HashMap<>();
-        response.put("kartuKeluarga", kartuKeluargaResponseList);
-        return response;
-    }
+@GetMapping()
+public  List<KartuKeluargaResponse>getAllKartuKeluarga(
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size,
+        @RequestParam(name = "sort", defaultValue = "asc") String sort) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+    return kartuKeluargaService.getAllKartuKeluargaWithPenduduk(pageable, Sort.unsorted()).getContent();
+}
 
     @GetMapping("/{noKK}")
     public KartuKeluargaResponse getKartuKeluargaByNoKK(@PathVariable String noKK) {

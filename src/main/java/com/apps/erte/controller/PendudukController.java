@@ -3,7 +3,10 @@ package com.apps.erte.controller;
 import com.apps.erte.dto.request.KartuKeluargaRequest;
 import com.apps.erte.dto.request.PendudukRequest;
 import com.apps.erte.dto.response.PendudukResponse;
+import com.apps.erte.dto.response.SuratPengantarResponse;
 import com.apps.erte.entity.Penduduk;
+import com.apps.erte.entity.user.User;
+import com.apps.erte.repository.PendudukRepository;
 import com.apps.erte.service.PendudukService;
 import com.apps.erte.util.ApiError;
 import com.apps.erte.util.FileValidationException;
@@ -17,9 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -27,9 +27,13 @@ import java.util.*;
 @CrossOrigin
 public class PendudukController {
     private final PendudukService pendudukService;
+    private final PendudukRepository pendudukRepository;
+
     @Autowired
-    public PendudukController(PendudukService pendudukService) {
+    public PendudukController(PendudukService pendudukService,
+                              PendudukRepository pendudukRepository) {
         this.pendudukService = pendudukService;
+        this.pendudukRepository = pendudukRepository;
     }
 
     @GetMapping()
@@ -94,14 +98,40 @@ public class PendudukController {
             return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     @GetMapping("/get-all-penduduk")
     public List<PendudukResponse> getDataPenduduk() {
         return pendudukService.getAllPenduduk();
     }
-
     @GetMapping("/get-penduduk-by-no-kk")
     public List<PendudukResponse> getPendudukByNoKK(@RequestParam String noKK) {
         return pendudukService.getPendudukByNoKK(noKK);
     }
+    @GetMapping("/get-penduduk-by-noktp")
+    public List<PendudukResponse> getPendudukByNoKtp(@RequestParam String noKtp) {
+        return pendudukService.getPendudukByNoKtp(noKtp);
+    }
+    @GetMapping("/search")
+    public List<PendudukResponse> searchPenduduk(
+            @RequestParam(name = "keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sort", defaultValue = "id,asc") String sort) {
+
+        String[] sortProperties = sort.split(",");
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if (sortProperties.length > 1 && sortProperties[1].equalsIgnoreCase("desc")) {
+            direction = Sort.Direction.DESC;
+        }
+        Pageable pageable = PageRequest.of(page, size, direction, sortProperties[0]);
+        return pendudukService.searchPenduduk(keyword, pageable).getContent();
+    }
+
+    @GetMapping("/check-ktp/{noKtp}")
+    public ResponseEntity<Boolean> checkKtpAvailability(@PathVariable String noKtp) {
+        Optional<Penduduk> existingUser = pendudukRepository.findByNoKtp(noKtp);
+        return ResponseEntity.ok(existingUser.isEmpty());
+    }
+
+
 }

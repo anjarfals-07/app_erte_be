@@ -107,6 +107,7 @@ public class DetailPindahService {
         response.setPendidikan(penduduk.getPendidikan());
         response.setPekerjaan(penduduk.getPekerjaan());
         response.setTelepon(penduduk.getTelepon());
+        response.setEmail(penduduk.getEmail());
         response.setAlamat(penduduk.getAlamat());
         response.setRt(penduduk.getRt());
         response.setRw(penduduk.getRw());

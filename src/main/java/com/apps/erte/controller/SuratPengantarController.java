@@ -4,6 +4,7 @@ import com.apps.erte.dto.request.SuratPengantarRequest;
 import com.apps.erte.dto.request.meninggal.PendudukMeninggalRequest;
 import com.apps.erte.dto.response.SuratPengantarResponse;
 import com.apps.erte.dto.response.meninggal.PendudukMeninggalResponse;
+import com.apps.erte.dto.response.pindah.PendudukPindahResponse;
 import com.apps.erte.entity.kematian.PendudukMeninggal;
 import com.apps.erte.entity.suratpengantar.SuratPengantar;
 import com.apps.erte.service.SuratPengantarService;
@@ -18,7 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/surat-pengantar")
@@ -63,5 +66,21 @@ public class SuratPengantarController {
         // Hapus penduduk meninggal dan reset newStatusPenduduk menjadi NULL
         suratPengantarService.deleteSuratPengantar(id);
         return new ResponseEntity<>("Penduduk Meninggal deleted successfully", HttpStatus.OK);
+    }
+    @GetMapping("/search")
+    public List<SuratPengantarResponse> searchSuratPengantar(
+            @RequestParam(name = "keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sort", defaultValue = "id,asc") String sort) {
+
+        String[] sortProperties = sort.split(",");
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if (sortProperties.length > 1 && sortProperties[1].equalsIgnoreCase("desc")) {
+            direction = Sort.Direction.DESC;
+        }
+        Pageable pageable = PageRequest.of(page, size, direction, sortProperties[0]);
+        return suratPengantarService.searchSuratPengantar(keyword, pageable).getContent();
     }
 }

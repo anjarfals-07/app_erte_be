@@ -9,7 +9,9 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/siap_app
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: nop4ssword
+      SPRING_DATASOURCE_PASSWORD: anjar94
+      JWT_SECRET: developer
+      JWT_EXPIRATION: 3600  # Set the desired expiration time
     depends_on:
       - postgresql
       - minio  # Added dependency on the MinIO service
@@ -20,11 +22,9 @@ services:
     environment:
       POSTGRES_DB: siap_app
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: nop4ssword
+      POSTGRES_PASSWORD: anjar94
     ports:
       - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
 
   minio:
     image: minio/minio
@@ -39,17 +39,8 @@ services:
       MINIO_ACCESS_KEY: developer
       MINIO_SECRET_KEY: nop4ssword
     command: server /data --console-address :9001
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin-container
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_PORT: 5050
-    ports:
-      - "5050:5050"
-    depends_on:
-      - postgresql
 
-volumes:
-  postgres-data:
+#security:
+#  jwt:
+#    secret: developer
+#    expiration: 3600

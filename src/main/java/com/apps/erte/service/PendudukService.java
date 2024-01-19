@@ -2,7 +2,9 @@ package com.apps.erte.service;
 import com.apps.erte.config.MinioConfig;
 import com.apps.erte.dto.request.KartuKeluargaRequest;
 import com.apps.erte.dto.request.PendudukRequest;
+import com.apps.erte.dto.response.KartuKeluargaResponse;
 import com.apps.erte.dto.response.PendudukResponse;
+import com.apps.erte.dto.response.SuratPengantarResponse;
 import com.apps.erte.entity.KartuKeluarga;
 import com.apps.erte.entity.Penduduk;
 import com.apps.erte.repository.KartuKeluargaRepository;
@@ -23,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,9 +74,7 @@ public class PendudukService {
                 kartuKeluarga.setNoKK(request.getKartuKeluarga().getNoKK());
                 kartuKeluarga.setNamaKepalaKeluarga(request.getKartuKeluarga().getNamaKepalaKeluarga());
                 kartuKeluarga = kartuKeluargaRepository.save(kartuKeluarga);
-
             }
-
         }
 
         Penduduk penduduk = new Penduduk();
@@ -189,6 +191,22 @@ public class PendudukService {
         return pendudukList.stream().map(this::mapResidentToResponse).collect(Collectors.toList());
     }
 
+    public List<PendudukResponse> getPendudukByNoKtp(String noKtp) {
+        Optional<Penduduk> pendudukList = pendudukRepository.findByNoKtp(noKtp);
+        return pendudukList.stream().map(this::mapResidentToResponse).collect(Collectors.toList());
+    }
+    public Page<PendudukResponse> searchPenduduk(String keyword, Pageable pageable) {
+        LocalDate tanggallahir = null;
+        try {
+            // Attempt to parse dates from the keyword string
+            tanggallahir = LocalDate.parse(keyword);
+        } catch (DateTimeParseException ignored) {
+            // Ignore parsing errors, as the keyword might not be a date
+        }
+        return pendudukRepository.search(keyword, tanggallahir, pageable)
+                .map(this::mapResidentToResponse);
+    }
+
     private PendudukResponse mapResidentToResponse(Penduduk resident) {
         PendudukResponse response = new PendudukResponse();
         response.setId(resident.getId());
@@ -204,6 +222,7 @@ public class PendudukService {
         response.setPendidikan(resident.getPendidikan());
         response.setPekerjaan(resident.getPekerjaan());
         response.setTelepon(resident.getTelepon());
+        response.setEmail(resident.getEmail());
         response.setAlamat(resident.getAlamat());
         response.setRt(resident.getRt());
         response.setRw(resident.getRw());
@@ -249,6 +268,7 @@ public class PendudukService {
         resident.setPekerjaan(request.getPekerjaan());
         resident.setTelepon(request.getTelepon());
         resident.setAlamat(request.getAlamat());
+        resident.setEmail(request.getEmail());
         resident.setRt(request.getRt());
         resident.setRw(request.getRw());
         resident.setKelurahan(request.getKelurahan());

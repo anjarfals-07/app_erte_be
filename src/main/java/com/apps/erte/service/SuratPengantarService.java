@@ -7,6 +7,7 @@ import com.apps.erte.dto.response.PendudukResponse;
 import com.apps.erte.dto.response.SuratPengantarResponse;
 import com.apps.erte.dto.response.meninggal.PendudukMeninggalResponse;
 import com.apps.erte.dto.response.meninggal.SuratKeteranganMeninggalResponse;
+import com.apps.erte.dto.response.pindah.PendudukPindahResponse;
 import com.apps.erte.entity.Penduduk;
 import com.apps.erte.entity.kematian.PendudukMeninggal;
 import com.apps.erte.entity.kematian.SuratKeteranganMeninggal;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +99,18 @@ public class SuratPengantarService {
         return suratPengantarRepository.findByNoSuratPengantar(noSurat, pageable);
     }
 
+    public Page<SuratPengantarResponse> searchSuratPengantar(String keyword, Pageable pageable) {
+        LocalDate tanggalSurat = null;
+        try {
+            // Attempt to parse dates from the keyword string
+            tanggalSurat = LocalDate.parse(keyword);
+        } catch (DateTimeParseException ignored) {
+            // Ignore parsing errors, as the keyword might not be a date
+        }
+        return suratPengantarRepository.search(keyword, tanggalSurat, pageable)
+                .map(this::buildSuratPengantarResponse);
+    }
+
     private SuratPengantarResponse buildSuratPengantarResponse(SuratPengantar suratPengantar) {
         // Membuat response
         SuratPengantarResponse response = new SuratPengantarResponse();
@@ -127,7 +142,7 @@ public class SuratPengantarService {
         response.setPendidikan(penduduk.getPendidikan());
         response.setPekerjaan(penduduk.getPekerjaan());
         response.setTelepon(penduduk.getTelepon());
-        response.setAlamat(penduduk.getAlamat());
+        response.setEmail(penduduk.getEmail());
         response.setRt(penduduk.getRt());
         response.setRw(penduduk.getRw());
         response.setKelurahan(penduduk.getKelurahan());

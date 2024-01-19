@@ -13,4 +13,5 @@ import java.util.List;
 public interface KartuKeluargaRepository extends JpaRepository<KartuKeluarga, Long> {
     Page<KartuKeluarga> findAll(Pageable pageable);
     KartuKeluarga findByNoKK(String noKK);
+
 }

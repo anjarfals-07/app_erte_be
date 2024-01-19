@@ -3,6 +3,7 @@ package com.apps.erte.service;
 import com.apps.erte.dto.request.meninggal.PendudukMeninggalRequest;
 import com.apps.erte.dto.request.meninggal.SuratKeteranganMeninggalRequest;
 import com.apps.erte.dto.response.PendudukResponse;
+import com.apps.erte.dto.response.SuratPengantarResponse;
 import com.apps.erte.dto.response.meninggal.PendudukMeninggalResponse;
 import com.apps.erte.dto.response.meninggal.SuratKeteranganMeninggalResponse;
 import com.apps.erte.dto.response.pindah.PendudukPindahResponse;
@@ -23,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -136,6 +139,22 @@ public class PendudukMeninggalService {
         // Hapus penduduk meninggal dari database
         pendudukMeninggalRepository.delete(pendudukMeninggal);
     }
+
+    public Page<PendudukMeninggalResponse> search(String keyword, Pageable pageable) {
+        LocalDate tanggalWafat = null;
+        LocalDate tanggalSuratMeninggal = null;
+
+        try {
+            // Attempt to parse dates from the keyword string
+            tanggalWafat = LocalDate.parse(keyword);
+            tanggalSuratMeninggal = LocalDate.parse(keyword);
+        } catch (DateTimeParseException ignored) {
+            // Ignore parsing errors, as the keyword might not be a date
+        }
+        return pendudukMeninggalRepository.search(keyword, tanggalWafat,tanggalSuratMeninggal, pageable)
+                .map(this::buildPendudukMeninggalResponse);
+    }
+
     //    Response
 private PendudukMeninggalResponse buildPendudukMeninggalResponse(PendudukMeninggal pendudukMeninggal) {
     // Membuat response
@@ -175,6 +194,7 @@ private PendudukMeninggalResponse buildPendudukMeninggalResponse(PendudukMeningg
         response.setPendidikan(penduduk.getPendidikan());
         response.setPekerjaan(penduduk.getPekerjaan());
         response.setTelepon(penduduk.getTelepon());
+        response.setEmail(penduduk.getEmail());
         response.setAlamat(penduduk.getAlamat());
         response.setRt(penduduk.getRt());
         response.setRw(penduduk.getRw());

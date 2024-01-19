@@ -22,6 +22,7 @@ public class PendudukResponse {
     private String pendidikan;
     private String pekerjaan;
     private String telepon;
+    private String email;
     private String alamat;
     private String rt;
     private String rw;

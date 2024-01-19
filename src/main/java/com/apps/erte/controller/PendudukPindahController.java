@@ -38,18 +38,18 @@ public class PendudukPindahController {
         }
     }
     @GetMapping()
-    public Map<String, List<PendudukPindahResponse>> getAllPendudukPindah(
+    public List<PendudukPindahResponse> getAllPendudukPindah(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "sort", defaultValue = "asc") String sort) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-        List<PendudukPindahResponse> pendudukPindahResponseList = pendudukPindahService.getAllPendudukPindah(pageable, Sort.unsorted()).getContent();
-        Map<String, List<PendudukPindahResponse>> response = new HashMap<>();
-        response.put("pendudukPindah", pendudukPindahResponseList);
-        return response;
+//        List<PendudukPindahResponse> pendudukPindahResponseList = pendudukPindahService.getAllPendudukPindah(pageable, Sort.unsorted()).getContent();
+//        Map<String, List<PendudukPindahResponse>> response = new HashMap<>();
+//        response.put("pendudukPindah", pendudukPindahResponseList);
+        return pendudukPindahService.getAllPendudukPindah(pageable, Sort.unsorted()).getContent();
     }
     @GetMapping("/search")
-    public Map<String, List<PendudukPindahResponse>> searchPendudukPindah(
+    public  List<PendudukPindahResponse>searchPendudukPindah(
             @RequestParam(name = "keyword") String keyword,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
@@ -62,10 +62,7 @@ public class PendudukPindahController {
             direction = Sort.Direction.DESC;
         }
         Pageable pageable = PageRequest.of(page, size, direction, sortProperties[0]);
-        List<PendudukPindahResponse> pendudukPindahResponseList = pendudukPindahService.searchPendudukPindah(keyword, pageable).getContent();
-        Map<String, List<PendudukPindahResponse>> response = new HashMap<>();
-        response.put("pendudukPindah", pendudukPindahResponseList);
-        return response;
+        return pendudukPindahService.searchPendudukPindah(keyword, pageable).getContent();
     }
     @GetMapping("/{id}")
     public ResponseEntity<PendudukPindahResponse> getPendudukPindahById(@PathVariable Long id) {
