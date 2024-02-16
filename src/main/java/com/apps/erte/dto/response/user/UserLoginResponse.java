@@ -1,11 +1,8 @@
 package com.apps.erte.dto.response.user;
 
-import com.apps.erte.entity.Penduduk;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,6 +11,8 @@ public class UserLoginResponse {
     private String username;
     private String role;
     private String token;
+    private long expiresInMs;
+    private Long pendudukId;
     private String namaLengkap;
     private String telepon;
     private String email;

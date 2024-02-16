@@ -4,9 +4,7 @@ import com.apps.erte.entity.Penduduk;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import javax.persistence.*;
-
 @Entity
 @Table(name = "users")
 @Data

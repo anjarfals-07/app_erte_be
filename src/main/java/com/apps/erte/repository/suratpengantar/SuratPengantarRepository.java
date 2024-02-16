@@ -16,9 +16,7 @@ import java.util.List;
 public interface SuratPengantarRepository extends JpaRepository<SuratPengantar, Long> {
     List<SuratPengantar> findByNoSuratPengantarOrPendudukNoKtpOrPendudukKartuKeluargaNoKKOrPendudukNamaLengkap(
             String noSuratPengantar, String noKtp, String noKK, String namaLengkap);
-
     Page<SuratPengantar> findByNoSuratPengantar(String noSurat, Pageable pageable);
-
 //    Search
     @Query("SELECT sp FROM SuratPengantar sp " +
             "LEFT JOIN sp.penduduk p " +
@@ -34,4 +32,6 @@ public interface SuratPengantarRepository extends JpaRepository<SuratPengantar, 
             @Param("keyword") String keyword,
             @Param("tanggalSurat") LocalDate tanggalSurat,
             Pageable pageable);
+
+    Page<SuratPengantar> findByPendudukId(Long pendudukId, Pageable pageableWithSort);
 }

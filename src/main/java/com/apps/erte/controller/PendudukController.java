@@ -132,6 +132,4 @@ public class PendudukController {
         Optional<Penduduk> existingUser = pendudukRepository.findByNoKtp(noKtp);
         return ResponseEntity.ok(existingUser.isEmpty());
     }
-
-
 }

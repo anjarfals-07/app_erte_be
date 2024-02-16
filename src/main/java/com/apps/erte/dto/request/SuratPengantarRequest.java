@@ -8,7 +8,6 @@ import java.time.LocalDate;
 @Data
 public class SuratPengantarRequest {
     private String noSuratPengantar;
-//    private PendudukRequest pendudukRequest;
     private Long pendudukId;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate tanggalSurat;

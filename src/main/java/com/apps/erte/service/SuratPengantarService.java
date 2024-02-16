@@ -29,13 +29,10 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @Service
 public class SuratPengantarService {
-
     @Autowired
     private SuratPengantarRepository suratPengantarRepository;
-
     @Autowired
     private PendudukRepository pendudukRepository;
 
@@ -48,7 +45,6 @@ public class SuratPengantarService {
         suratPengantar.setKeterangan(request.getKeterangan());
         Penduduk penduduk = pendudukRepository.findById(request.getPendudukId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Penduduk not found"));
-
         // Menghubungkan penduduk dengan surat pengantar
         suratPengantar.setPenduduk(penduduk);
         // Menyimpan data ke database
@@ -57,28 +53,22 @@ public class SuratPengantarService {
         return buildSuratPengantarResponse(suratPengantar);
     }
 
-
     public SuratPengantarResponse updateSuratPengantar(Long id, SuratPengantarRequest request) {
         // Mencari data surat pengantar yang akan diupdate
         SuratPengantar suratPengantar = suratPengantarRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Surat Pengantar not found"));
-
         // Mengupdate data pada objek surat pengantar dari request
         suratPengantar.setNoSuratPengantar(request.getNoSuratPengantar());
         suratPengantar.setTanggalSurat(request.getTanggalSurat());
         suratPengantar.setKeperluan(request.getKeperluan());
         suratPengantar.setKeterangan(request.getKeterangan());
-
         // Mencari data penduduk yang akan diupdate
         Penduduk penduduk = pendudukRepository.findById(request.getPendudukId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Penduduk not found"));
-
         // Menghubungkan penduduk dengan surat pengantar
         suratPengantar.setPenduduk(penduduk);
-
         // Menyimpan data ke database
         suratPengantar = suratPengantarRepository.save(suratPengantar);
-
         // Membuat response
         return buildSuratPengantarResponse(suratPengantar);
     }
@@ -95,10 +85,14 @@ public class SuratPengantarService {
         Page<SuratPengantar> suratPengantars = suratPengantarRepository.findAll(pageableWithSort);
         return suratPengantars.map(this::buildSuratPengantarResponse);
     }
+    public Page<SuratPengantarResponse> getSuratPengantarMobile(Long pendudukId, Pageable pageable, Sort sort) {
+        Pageable pageableWithSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<SuratPengantar> suratPengantars = suratPengantarRepository.findByPendudukId(pendudukId, pageableWithSort);
+        return suratPengantars.map(this::buildSuratPengantarResponse);
+    }
     public Page<SuratPengantar> getSuratPengantarByNoSurat(String noSurat, Pageable pageable) {
         return suratPengantarRepository.findByNoSuratPengantar(noSurat, pageable);
     }
-
     public Page<SuratPengantarResponse> searchSuratPengantar(String keyword, Pageable pageable) {
         LocalDate tanggalSurat = null;
         try {
@@ -126,7 +120,6 @@ public class SuratPengantarService {
         response.setPenduduk(buildPendudukResponse(penduduk));
         return response;
     }
-
     private PendudukResponse buildPendudukResponse(Penduduk penduduk) {
         PendudukResponse response = new PendudukResponse();
         response.setId(penduduk.getId());

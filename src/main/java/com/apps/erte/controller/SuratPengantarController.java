@@ -83,4 +83,17 @@ public class SuratPengantarController {
         Pageable pageable = PageRequest.of(page, size, direction, sortProperties[0]);
         return suratPengantarService.searchSuratPengantar(keyword, pageable).getContent();
     }
+
+//    Mobile
+
+@GetMapping("/mobile")
+public List<SuratPengantarResponse> getSuratPengantarMobile(
+        @RequestParam(name = "pendudukId") Long pendudukId,
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size,
+        @RequestParam(name = "sort", defaultValue = "id,asc") String sort) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+    return suratPengantarService.getSuratPengantarMobile(pendudukId,pageable, Sort.unsorted()).getContent();
+}
+
 }
